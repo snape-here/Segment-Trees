@@ -6,88 +6,83 @@ using namespace std;
 #define ld long double
 #define pb push_back
 #define pi  pair< int,int >
-#define pl  pair< ll,ll >
-#define f first
-#define s second 
-#define INF 100000000000
+#define ff first
+#define ss second
+#define mod 1000000007
+#define inf 300000000000000007
 #define endl "\n"
 
-const int N=1e5+5;
+const int N=2e5+5;
 
-int arr[N],st[4*N];
+int n,m,q,l,r;
 
-void build(int si , int ss , int se)
+int a[N],tree[N];
+
+void build(int ind , int st , int en)
 {
-	if(ss == se)
-	{
-		st[si] = arr[ss];
-		return ;
-	}
- 
-	int mid = (ss + se) / 2;
-	build(2*si , ss , mid);
-	build(2*si+1 ,mid+1 , se);
- 
-	st[si] = min(st[2*si] , st[2*si+1]);
+    if(st==en)
+    {
+        tree[ind]=a[st];
+        return;
+    }
+
+    int mid=(st+en)/2;
+
+    build(2*ind+1,st,mid);
+    build(2*ind+2,mid+1,en);
+
+    tree[ind]=tree[2*ind+1]+tree[2*ind+2];
 }
 
-int query(int si , int ss , int se , int qs , int qe)
+int getsum(int ind , int st , int en , int l , int r)
 {
-	if(ss > qe || se < qs)
-		return INF;
- 
-	if(ss >= qs && se <= qe)
-		return st[si];
- 
-	int mid = (ss + se) / 2;
- 
-	return min(query(2*si , ss , mid , qs , qe) , query(2*si+1 , mid+1 , se , qs , qe));
+    if(l>r)
+        return 0;
+        
+    if(l==st && r==en)
+        return tree[ind];
+        
+    int mid=(st+en)/2;
+        
+    return getsum(2*ind+1,st,mid,l,min(r,mid))+getsum(2*ind+2,mid+1,en,max(l,mid+1),r);
 }
 
-void update(int si , int ss , int se , int qi)
+void update(int ind , int st , int en , int pos , int val)
 {
-	if(ss == se)
-	{
-		st[si]=arr[ss];
-		return;
-	}
-
-	int mid = (ss + se) / 2;
-
-	if(qi<=mid)
-		update(2*si , ss , mid , qi);
-	else
-		update(2*si+1 , mid+1 , se , qi);
-
-	st[si]=min(st[2*si+1] , st[2*si]);
+    if(st==en)
+        tree[ind]=val;
+        
+    else
+    {
+        int mid=(st+en)/2;
+        
+        if(pos<=mid)
+            update(2*ind+1,st,mid,pos,val);
+        else
+            update(2*ind+2,mid+1,en,pos,val); 
+            
+        tree[ind]=tree[2*ind+1]+tree[2*ind+2];
+    }
 }
 
-signed main()
+signed main() 
 {
     ios_base::sync_with_stdio(false); cin.tie(NULL);
 
-    #ifndef ONLINE_JUDGE
-    freopen("input.txt", "r", stdin);
-    freopen("output.txt", "w", stdout);
-    #endif
+    cin>>n>>m;
+    for(int i=0;i<n;i++)
+        cin>>a[i];
+        
+    build(0,0,n-1);
 
-    int n,q,l,r;
-
-    cin>>n;
-
-    for(int i=1;i<=n;i++)
-    	cin>>arr[i];
-
-    build(1,1,n);
-
-    cin>>q;
-
-    while(q--)
+    for(int i=0;i<m;i++)
     {
-    	cin>>l>>r;
-    	cout<<query(1,1,n,l+1,r+1)<<endl;
+        cin>>q>>l>>r;
+        if(q==1)
+            update(0,0,n-1,l,r);
+        else
+            cout<<getsum(0,0,n-1,l,r-1)<<endl;
     }
 
     return 0;
-   
 }
